@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "web-hw-9"
+version = "0.1.0"
+description = ""
+authors = ["m0wgli <rodiontiutiunyk@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "web_hw_9"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+scrapy = "^2.10.0"
+configparser2 = "^4.0.0"
+mongoengine = "^0.27.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
