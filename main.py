@@ -33,9 +33,9 @@ def load_authors(file_path):
         for author_data in authors:
             author = Author(
                 fullname=author_data["fullname"],
-                date_born=author_data["date_born"],
-                location_born=author_data["location_born"],
-                bio=author_data["bio"],
+                born_date=author_data["born_date"],
+                born_location=author_data["born_location"],
+                description=author_data["description"],
             )
             author.save()
     print("Authors loaded successfully!")
@@ -48,23 +48,23 @@ def load_quotes(file_path):
             author_name = quote_data["author"]
             author = Author.objects(fullname=author_name).first()
             quote = Quote(
-                tags=quote_data["tags"], author=author, text=quote_data["text"]
+                tags=quote_data["tags"], author=author, quote=quote_data["quote"]
             )
             quote.save()
     print("Quotes loaded successfully!")
 
 
 class QuoteItem(Item):
-    text = Field()
+    quote = Field()
     author = Field()
     tags = Field()
 
 
 class AuthorItem(Item):
     fullname = Field()
-    date_born = Field()
-    location_born = Field()
-    bio = Field()
+    born_date = Field()
+    born_location = Field()
+    description = Field()
 
 
 class QuotesPipline:
@@ -75,7 +75,7 @@ class QuotesPipline:
         adapter = ItemAdapter(item)
         if 'fullname' in adapter.keys():
             self.authors.append(dict(adapter))
-        if 'text' in adapter.keys():
+        if 'quote' in adapter.keys():
             self.quotes.append(dict(adapter))
 
     def close_spider(self, spider):
@@ -94,12 +94,12 @@ class QuotesSpider(scrapy.Spider):
     }}
 
     def parse(self, response, **kwargs):
-        for quote in response.xpath("/html//div[@class='quote']"):
-            text = quote.xpath("span[@class='text']/text()").get().strip()
-            author = quote.xpath("span/small[@class='author']/text()").get().strip()
-            tags = quote.xpath("div[@class='tags']/a/text()").extract()
-            yield QuoteItem(text=text, author=author, tags=tags)
-            yield response.follow(url=self.start_urls[0] + quote.xpath('span/a/@href').get(),
+        for quotes in response.xpath("/html//div[@class='quote']"):
+            quote = quotes.xpath("span[@class='text']/text()").get().strip()
+            author = quotes.xpath("span/small[@class='author']/text()").get().strip()
+            tags = quotes.xpath("div[@class='tags']/a/text()").extract()
+            yield QuoteItem(quote=quote, author=author, tags=tags)
+            yield response.follow(url=self.start_urls[0] + quotes.xpath('span/a/@href').get(),
                                   callback=self.parse_author)
         next_link = response.xpath('//li[@class="next"]/a/@href').get()
         if next_link:
@@ -108,10 +108,10 @@ class QuotesSpider(scrapy.Spider):
     def parse_author(self, response, **kwargs):  # noqa
         content = response.xpath("/html//div[@class='author-details']")
         fullname = content.xpath('h3[@class="author-title"]/text()').get().strip()
-        date_born = content.xpath('p/span[@class="author-born-date"]/text()').get().strip()
-        location_born = content.xpath('p/span[@class="author-born-location"]/text()').get().strip()
-        bio = content.xpath('div[@class="author-description"]/text()').get().strip()
-        yield AuthorItem(fullname=fullname, date_born=date_born, location_born=location_born, bio=bio)
+        born_date = content.xpath('p/span[@class="author-born-date"]/text()').get().strip()
+        born_location = content.xpath('p/span[@class="author-born-location"]/text()').get().strip()
+        description = content.xpath('div[@class="author-description"]/text()').get().strip()
+        yield AuthorItem(fullname=fullname, born_date=born_date, born_location=born_location, description=description)
 
 
 if __name__ == "__main__":

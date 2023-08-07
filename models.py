@@ -13,12 +13,12 @@ connect(db='hw_8', host=mongodb_uri)
 
 class Author(Document):
     fullname = StringField(required=True)
-    date_born = StringField(max_length=50)
-    location_born = StringField(max_length=80)
-    bio = StringField()
+    born_date = StringField(max_length=50)
+    born_location = StringField(max_length=80)
+    description = StringField()
 
 
 class Quote(Document):
     tags = ListField(StringField())
     author = ReferenceField(Author)
-    text = StringField(required=True)
+    quote = StringField(required=True)
